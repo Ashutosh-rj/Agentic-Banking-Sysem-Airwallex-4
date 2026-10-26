@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: kaizen-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - DEMO_MODE=true
+      - SECRET_KEY=kaizen-fintech-dev-secret-key-2024-change-in-production
+      - DATABASE_URL=sqlite+aiosqlite:///./kaizen.db
+    volumes:
+      - backend-data:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: kaizen-frontend
+    ports:
+      - "80:80"
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  backend-data:
